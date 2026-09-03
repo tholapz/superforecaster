@@ -31,8 +31,9 @@ class Settings(BaseSettings):
     # API auth
     api_key: str = "changeme"
 
-    # CORS
-    cors_origins: list[str] = ["*"]
+    # CORS — empty by default; set explicit origins via CORS_ORIGINS.
+    # Never combine "*" with allow_credentials=True.
+    cors_origins: list[str] = []
 
     model_config = SettingsConfigDict(
         env_file=".env",
