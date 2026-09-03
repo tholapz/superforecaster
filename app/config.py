@@ -2,17 +2,38 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "my-service"
+    # Application
+    app_name: str = "superforecaster"
     environment: str = "development"
     debug: bool = False
     log_level: str = "INFO"
 
-    # Cloud Run injects PORT=8080 at runtime; local dev defaults to 8000.
-    # pydantic-settings maps the PORT env var here automatically (case-insensitive).
+    # Server
     port: int = 8000
 
-    # Comma-separated origins are parsed into a list by pydantic-settings.
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # Required
+    anthropic_api_key: str
+    database_url: str
+
+    # LLM
+    llm_model: str = "claude-sonnet-4-20250514"
+    context_max_tokens: int = 1500
+
+    # Forecasting
+    persona_count: int = 6
+    trim_alpha: float = 0.10
+    extremize_beta: float = 2.5
+    min_quorum: int = 3
+
+    # Scheduler
+    rerun_interval_hours: int = 24
+
+    # API auth
+    api_key: str = "changeme"
+
+    # CORS — empty by default; set explicit origins via CORS_ORIGINS.
+    # Never combine "*" with allow_credentials=True.
+    cors_origins: list[str] = []
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -21,4 +42,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # required fields come from env
