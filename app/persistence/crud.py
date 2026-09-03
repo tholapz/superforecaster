@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 from sqlalchemy import select
@@ -144,7 +144,12 @@ async def get_snapshot_closest_to(
     snapshots = list(result.scalars().all())
     if not snapshots:
         return None
-    return min(snapshots, key=lambda s: abs((s.run_at.replace(tzinfo=timezone.utc) if s.run_at.tzinfo is None else s.run_at) - target_dt))
+    return min(
+        snapshots,
+        key=lambda s: abs(
+            (s.run_at.replace(tzinfo=UTC) if s.run_at.tzinfo is None else s.run_at) - target_dt
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -180,12 +185,8 @@ async def create_persona_output(
     return output
 
 
-async def list_persona_outputs(
-    db: AsyncSession, snapshot_id: uuid.UUID
-) -> list[PersonaOutput]:
-    result = await db.execute(
-        select(PersonaOutput).where(PersonaOutput.snapshot_id == snapshot_id)
-    )
+async def list_persona_outputs(db: AsyncSession, snapshot_id: uuid.UUID) -> list[PersonaOutput]:
+    result = await db.execute(select(PersonaOutput).where(PersonaOutput.snapshot_id == snapshot_id))
     return list(result.scalars().all())
 
 

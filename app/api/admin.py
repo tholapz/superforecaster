@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.dependencies import verify_api_key
-from app.personas.definitions import PERSONA_CONFIGS, get_persona_configs, update_persona_weight
+from app.personas.definitions import get_persona_configs, update_persona_weight
 
 router = APIRouter(prefix="/v1/admin", tags=["admin"])
 
@@ -48,6 +48,6 @@ async def list_personas() -> list[PersonaInfo]:
 async def set_persona_weight(persona_id: str, body: WeightUpdate) -> dict:
     try:
         update_persona_weight(persona_id, body.weight)
-    except KeyError:
-        raise HTTPException(status_code=404, detail=f"Persona '{persona_id}' not found")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Persona '{persona_id}' not found") from exc
     return {"persona_id": persona_id, "weight": body.weight}

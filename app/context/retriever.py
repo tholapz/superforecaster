@@ -1,7 +1,6 @@
-import json
-
 import structlog
 from anthropic import AsyncAnthropic
+from anthropic.types import MessageParam, ToolResultBlockParam
 
 from app.config import settings
 
@@ -47,7 +46,7 @@ async def fetch_context(question_text: str, resolution_criteria: str) -> tuple[s
         "and provide a concise digest of key facts."
     )
 
-    messages: list[dict] = [{"role": "user", "content": user}]
+    messages: list[MessageParam] = [{"role": "user", "content": user}]
     source_urls: list[str] = []
     digest = ""
 
@@ -63,18 +62,20 @@ async def fetch_context(question_text: str, resolution_criteria: str) -> tuple[s
             )
 
             if response.stop_reason == "tool_use":
-                tool_results = []
+                tool_results: list[ToolResultBlockParam] = []
                 for block in response.content:
                     if block.type == "tool_use" and block.name == "web_search":
                         query = block.input.get("query", "")
                         logger.info("web_search", query=query)
                         # Return a stub result — the real Anthropic web search tool
                         # is handled server-side; we simulate the tool call pattern.
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": f"[Search results for: {query}]",
-                        })
+                        tool_results.append(
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": block.id,
+                                "content": f"[Search results for: {query}]",
+                            }
+                        )
                 messages.append({"role": "assistant", "content": response.content})
                 messages.append({"role": "user", "content": tool_results})
 

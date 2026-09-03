@@ -1,4 +1,5 @@
 """Unit tests for the aggregation engine."""
+
 import math
 
 import pytest

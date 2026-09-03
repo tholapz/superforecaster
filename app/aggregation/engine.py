@@ -27,8 +27,8 @@ def _logit(p: float) -> float:
     return float(np.log(p / (1 - p)))
 
 
-def _sigmoid(l: float) -> float:
-    return float(1 / (1 + np.exp(-l)))
+def _sigmoid(log_odds: float) -> float:
+    return float(1 / (1 + np.exp(-log_odds)))
 
 
 def _extremize(p: float, beta: float) -> float:

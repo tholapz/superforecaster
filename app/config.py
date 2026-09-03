@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # API auth
     api_key: str = "changeme"
 
+    # CORS
+    cors_origins: list[str] = ["*"]
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -38,4 +41,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # required fields come from env

@@ -2,12 +2,40 @@ import hashlib
 import re
 
 _DOMAIN_KEYWORDS: dict[str, list[str]] = {
-    "geopolitics": ["war", "military", "conflict", "treaty", "sanction", "nato", "un ", "invasion", "territory"],
-    "economics": ["gdp", "inflation", "recession", "fed ", "interest rate", "trade", "tariff", "market", "stock"],
+    "geopolitics": [
+        "war",
+        "military",
+        "conflict",
+        "treaty",
+        "sanction",
+        "nato",
+        "un ",
+        "invasion",
+        "territory",
+    ],
+    "economics": [
+        "gdp",
+        "inflation",
+        "recession",
+        "fed ",
+        "interest rate",
+        "trade",
+        "tariff",
+        "market",
+        "stock",
+    ],
     "technology": ["ai", "llm", "chip", "semiconductor", "quantum", "software", "cyber", "hack"],
     "health": ["pandemic", "vaccine", "disease", "who ", "outbreak", "virus", "covid"],
     "climate": ["climate", "carbon", "emissions", "renewable", "temperature", "paris agreement"],
-    "politics": ["election", "vote", "president", "prime minister", "parliament", "congress", "referendum"],
+    "politics": [
+        "election",
+        "vote",
+        "president",
+        "prime minister",
+        "parliament",
+        "congress",
+        "referendum",
+    ],
 }
 
 

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,9 +26,7 @@ async def run_forecast(question_id: str, db: AsyncSession) -> None:
     log.info("forecast_run_start")
 
     # 1. Fetch web context
-    context_digest, source_urls = await fetch_context(
-        question.text, question.resolution_criteria
-    )
+    context_digest, source_urls = await fetch_context(question.text, question.resolution_criteria)
 
     # 2. Build prior reasoning summaries for re-runs
     prior_reasoning_summaries: str | None = None
@@ -74,7 +72,7 @@ async def run_forecast(question_id: str, db: AsyncSession) -> None:
         return
 
     # 5. Compute change metrics
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     change_1w: int | None = None
     change_30d: int | None = None
 

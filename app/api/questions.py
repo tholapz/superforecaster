@@ -10,7 +10,7 @@ from app.dependencies import verify_api_key
 from app.persistence import crud
 from app.persistence.database import get_db
 from app.questions import registry
-from app.questions.schemas import QuestionCreate, QuestionListItem, QuestionResponse
+from app.questions.schemas import QuestionCreate, QuestionListItem
 from app.services.forecast import run_forecast
 
 logger = structlog.get_logger(__name__)
@@ -117,7 +117,9 @@ async def get_question(
 ) -> QuestionDetail:
     question = await crud.get_question(db, question_id)
     if question is None:
-        raise HTTPException(status_code=404, detail="Question not found", headers={"code": "not_found"})
+        raise HTTPException(
+            status_code=404, detail="Question not found", headers={"code": "not_found"}
+        )
 
     snapshot = await crud.get_latest_snapshot(db, question_id)
     persona_breakdown: list[PersonaBreakdownItem] = []
@@ -151,7 +153,9 @@ async def get_question(
     )
 
 
-@router.post("/{question_id}/run", response_model=RunResponse, dependencies=[Depends(verify_api_key)])
+@router.post(
+    "/{question_id}/run", response_model=RunResponse, dependencies=[Depends(verify_api_key)]
+)
 async def trigger_run(
     question_id: str,
     background_tasks: BackgroundTasks,

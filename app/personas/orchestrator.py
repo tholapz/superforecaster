@@ -3,6 +3,7 @@ import json
 
 import structlog
 from anthropic import AsyncAnthropic
+from anthropic.types import MessageParam
 from pydantic import ValidationError
 
 from app.config import settings
@@ -47,7 +48,7 @@ async def _call_persona(
         "Now provide your forecast as a JSON object."
     )
 
-    messages: list[dict] = [{"role": "user", "content": user_message}]
+    messages: list[MessageParam] = [{"role": "user", "content": user_message}]
 
     for attempt in range(2):
         try:
@@ -58,7 +59,6 @@ async def _call_persona(
                 messages=messages,
             )
             raw_text = ""
-            tokens_used = response.usage.output_tokens if response.usage else None
 
             for block in response.content:
                 if hasattr(block, "text"):
@@ -94,7 +94,9 @@ async def _call_persona(
             )
             if attempt == 0:
                 # Retry with correction prompt
-                messages.append({"role": "assistant", "content": raw_text if "raw_text" in dir() else ""})
+                messages.append(
+                    {"role": "assistant", "content": raw_text if "raw_text" in dir() else ""}
+                )
                 messages.append({"role": "user", "content": _CORRECTION_PROMPT})
             else:
                 return None

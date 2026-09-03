@@ -174,11 +174,11 @@ Each persona system prompt must contain exactly these four sections:
 ```python
 class PersonaOutput(BaseModel):
     persona_id: str
-    reasoning_chain: list[str]      # ordered reasoning steps, minimum 3
-    point_estimate: float            # 0.0–1.0 inclusive
+    reasoning_chain: list[str]  # ordered reasoning steps, minimum 3
+    point_estimate: float  # 0.0–1.0 inclusive
     confidence_interval: tuple[float, float]
     confidence_level: Literal["low", "medium", "high"]
-    key_cruxes: list[str]            # 2–4 items
+    key_cruxes: list[str]  # 2–4 items
     update_direction: Literal["up", "down", "unchanged"]
 ```
 
@@ -199,8 +199,14 @@ Remove the top and bottom `TRIM_ALPHA` fraction of `point_estimate` values. With
 ```python
 import numpy as np
 
-def logit(p): return np.log(p / (1 - p))
-def sigmoid(l): return 1 / (1 + np.exp(-l))
+
+def logit(p):
+    return np.log(p / (1 - p))
+
+
+def sigmoid(l):
+    return 1 / (1 + np.exp(-l))
+
 
 weighted_logit = np.average([logit(p) for p in estimates], weights=weights)
 raw_mean = sigmoid(weighted_logit)
@@ -212,7 +218,8 @@ Clamp `point_estimate` to [0.001, 0.999] before logit to avoid ±inf.
 
 ```python
 def extremize(p, beta):
-    return p**beta / (p**beta + (1 - p)**beta)
+    return p**beta / (p**beta + (1 - p) ** beta)
+
 
 extremized = extremize(raw_mean, EXTREMIZE_BETA)
 ```
@@ -220,13 +227,13 @@ extremized = extremize(raw_mean, EXTREMIZE_BETA)
 ### Final output
 
 ```python
-today_forecast: int          # round(extremized * 100), 0–100
+today_forecast: int  # round(extremized * 100), 0–100
 raw_mean: float
 extremized: float
 n_valid_personas: int
-spread: float                # std dev of trimmed point_estimate inputs
+spread: float  # std dev of trimmed point_estimate inputs
 persona_estimates: list[float]
-change_1w: int | None        # pp vs snapshot closest to now - 7 days; None if no history
+change_1w: int | None  # pp vs snapshot closest to now - 7 days; None if no history
 change_30d: int | None
 ```
 

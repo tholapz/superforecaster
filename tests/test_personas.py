@@ -1,8 +1,10 @@
 """Unit tests for persona orchestration."""
+
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from app.personas.orchestrator import run_personas
 from app.personas.schemas import PersonaOutputSchema
@@ -11,7 +13,11 @@ from app.personas.schemas import PersonaOutputSchema
 def _valid_output(persona_id: str) -> dict:
     return {
         "persona_id": persona_id,
-        "reasoning_chain": ["I identified the key actors.", "I consulted historical precedent.", "I arrived at a calibrated estimate."],
+        "reasoning_chain": [
+            "I identified the key actors.",
+            "I consulted historical precedent.",
+            "I arrived at a calibrated estimate.",
+        ],
         "point_estimate": 0.35,
         "confidence_interval": [0.2, 0.5],
         "confidence_level": "medium",
@@ -42,37 +48,37 @@ class TestPersonaOutputSchema:
     def test_rejects_point_estimate_above_1(self) -> None:
         data = _valid_output("test_persona")
         data["point_estimate"] = 1.5
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PersonaOutputSchema.model_validate(data)
 
     def test_rejects_point_estimate_below_0(self) -> None:
         data = _valid_output("test_persona")
         data["point_estimate"] = -0.1
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PersonaOutputSchema.model_validate(data)
 
     def test_rejects_too_few_reasoning_steps(self) -> None:
         data = _valid_output("test_persona")
         data["reasoning_chain"] = ["only one step"]
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PersonaOutputSchema.model_validate(data)
 
     def test_rejects_too_few_cruxes(self) -> None:
         data = _valid_output("test_persona")
         data["key_cruxes"] = ["only one"]
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PersonaOutputSchema.model_validate(data)
 
     def test_rejects_invalid_confidence_level(self) -> None:
         data = _valid_output("test_persona")
         data["confidence_level"] = "extreme"
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PersonaOutputSchema.model_validate(data)
 
     def test_rejects_invalid_update_direction(self) -> None:
         data = _valid_output("test_persona")
         data["update_direction"] = "sideways"
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PersonaOutputSchema.model_validate(data)
 
 
@@ -139,7 +145,6 @@ class TestRunPersonas:
         """When fewer than MIN_QUORUM personas return valid output, run_forecast marks insufficient_quorum."""
         from unittest.mock import AsyncMock, MagicMock, patch
 
-        from app.config import settings
         from app.services.forecast import run_forecast
 
         # Mock: only 1 valid persona (below MIN_QUORUM=3)

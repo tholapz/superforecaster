@@ -1,4 +1,5 @@
 """Integration tests for the API using httpx.AsyncClient against a real test DB."""
+
 import os
 from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, patch
@@ -7,9 +8,9 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.persistence.database import Base
-from app.persistence.models import ForecastSnapshot, PersonaOutput, Question
 
 # ---------------------------------------------------------------------------
 # Test DB setup
@@ -20,11 +21,15 @@ TEST_DATABASE_URL = os.getenv(
     "postgresql+asyncpg://sf:sf@localhost:5432/superforecaster_test",
 )
 
-test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+# NullPool: pytest-asyncio gives each test its own event loop, and a pooled
+# asyncpg connection cannot be reused across loops.
+test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
 TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False)
 
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
+# Function-scoped: pytest-asyncio runs each test in its own event loop, so a
+# session-scoped fixture would tear the schema down after the first test.
+@pytest_asyncio.fixture(autouse=True)
 async def create_test_tables() -> AsyncGenerator[None, None]:
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

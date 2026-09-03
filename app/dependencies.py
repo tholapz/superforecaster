@@ -10,5 +10,7 @@ async def verify_api_key(
     credentials: HTTPAuthorizationCredentials = Security(_bearer),
 ) -> str:
     if credentials.credentials != settings.api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key", headers={"WWW-Authenticate": "Bearer"})
+        raise HTTPException(
+            status_code=401, detail="Invalid API key", headers={"WWW-Authenticate": "Bearer"}
+        )
     return credentials.credentials

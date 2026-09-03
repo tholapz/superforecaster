@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -62,7 +62,7 @@ async def get_changes(
     question_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> ChangesResponse:
-    from datetime import timedelta, timezone
+    from datetime import timedelta
 
     question = await crud.get_question(db, question_id)
     if question is None:
@@ -72,7 +72,7 @@ async def get_changes(
     if latest is None or latest.run_status != "ok":
         return ChangesResponse(today_forecast=None, change_1w=None, change_30d=None, run_at=None)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     change_1w: int | None = None
     change_30d: int | None = None
 
